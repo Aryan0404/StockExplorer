@@ -1,129 +1,175 @@
+// data/repository/StockRepository.kt
 package com.example.stockexplorer.data.repository
 
+import com.example.stockexplorer.data.network.StockApi
 import com.example.stockexplorer.ui.screen.StockItem
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.IOException
 
 /**
  * Repository class for stock-related data operations.
- * This is a simplified implementation that returns mock data.
- * In a real app, this would make API calls to a stock service.
+ * Uses the Alpha Vantage API to fetch real stock data.
  */
 class StockRepository {
-
-    // Demo data for trending stocks
-    private val demoStocks = listOf(
-        StockItem("AAPL", "Apple Inc.", "$186.41", 1.25, 0.67),
-        StockItem("MSFT", "Microsoft Corp.", "$417.22", 2.36, 0.57),
-        StockItem("GOOGL", "Alphabet Inc.", "$178.25", -1.54, -0.86),
-        StockItem("AMZN", "Amazon.com Inc.", "$183.75", 0.95, 0.52),
-        StockItem("TSLA", "Tesla Inc.", "$174.90", -5.28, -2.93),
-        StockItem("META", "Meta Platforms Inc.", "$496.18", 3.42, 0.69),
-        StockItem("NVDA", "NVIDIA Corp.", "$875.33", 12.75, 1.48),
-        StockItem("JPM", "JPMorgan Chase & Co.", "$195.73", -0.84, -0.43),
-        StockItem("V", "Visa Inc.", "$275.54", 1.67, 0.61),
-        StockItem("WMT", "Walmart Inc.", "$62.93", 0.34, 0.54)
-    )
-
-    // Additional stocks for gainers & losers
-    private val topGainersData = listOf(
-        StockItem("NVDA", "NVIDIA Corporation", "$950.50", 8.2, 1.85),
-        StockItem("AMD", "Advanced Micro Devices, Inc.", "$165.70", 7.1, 1.65),
-        StockItem("PLTR", "Palantir Technologies Inc.", "$24.85", 6.7, 1.58),
-        StockItem("TSLA", "Tesla, Inc.", "$238.45", 6.2, 1.43),
-        StockItem("AAPL", "Apple Inc.", "$185.25", 5.7, 1.32),
-        StockItem("CRM", "Salesforce, Inc.", "$275.50", 4.6, 1.09),
-        StockItem("MSFT", "Microsoft Corporation", "$415.75", 4.3, 0.98),
-        StockItem("AMZN", "Amazon.com Inc.", "$178.30", 3.8, 0.87),
-        StockItem("META", "Meta Platforms, Inc.", "$482.35", 3.5, 0.79),
-        StockItem("GOOG", "Alphabet Inc.", "$175.90", 2.9, 0.65)
-    )
-
-    private val topLosersData = listOf(
-        StockItem("PFE", "Pfizer Inc.", "$28.15", -5.1, -1.45),
-        StockItem("INTC", "Intel Corporation", "$32.45", -4.8, -1.38),
-        StockItem("NKE", "Nike, Inc.", "$87.95", -4.5, -1.25),
-        StockItem("DIS", "The Walt Disney Company", "$98.25", -3.2, -0.98),
-        StockItem("KO", "The Coca-Cola Company", "$58.70", -2.3, -0.76),
-        StockItem("JPM", "JPMorgan Chase & Co.", "$172.40", -2.1, -0.67),
-        StockItem("WMT", "Walmart Inc.", "$65.80", -1.9, -0.58),
-        StockItem("IBM", "International Business Machines", "$165.30", -1.7, -0.52),
-        StockItem("T", "AT&T Inc.", "$18.40", -1.5, -0.45),
-        StockItem("VZ", "Verizon Communications Inc.", "$41.25", -1.2, -0.37)
-    )
+    private val apiService = StockApi.api
 
     /**
      * Get information for a specific stock by symbol.
-     * In a real app, this would fetch data from an API.
      */
-    suspend fun getStock(symbol: String): String {
-        // Simulate network delay
-        delay(800)
+    suspend fun getStock(symbol: String): StockItem? = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.getGlobalQuote(symbol = symbol)
+            response.globalQuote?.let { quote ->
+                val changeValue = quote.change.toDoubleOrNull() ?: 0.0
+                // The change percent comes as "1.25%" so we need to remove the % sign and parse
+                val changePercent = quote.changePercent
+                    .replace("%", "")
+                    .toDoubleOrNull() ?: 0.0
 
-        // Find the stock by symbol
-        val stock = demoStocks.find { it.symbol == symbol }
-
-        return if (stock != null) {
-            "${stock.name} (${stock.symbol}): ${stock.price}"
-        } else {
-            "Stock not found: $symbol"
+                StockItem(
+                    symbol = quote.symbol,
+                    name = getCompanyName(quote.symbol), // We'll get the name from company overview
+                    price = "$${quote.price}",
+                    priceChange = changeValue,
+                    percentChange = changePercent
+                )
+            }
+        } catch (e: Exception) {
+            // In case of error, return null
+            null
         }
     }
 
     /**
-     * Search for stocks by query.
-     * Returns stocks whose symbol or name contains the query.
+     * Get company name from symbol by calling the company overview endpoint
      */
-    suspend fun searchStocks(query: String): List<StockItem> {
-        // Simulate network delay
-        delay(800)
+    private suspend fun getCompanyName(symbol: String): String {
+        return try {
+            val overview = apiService.getCompanyOverview(symbol = symbol)
+            overview.name ?: symbol
+        } catch (e: Exception) {
+            // If we can't get the company name, return the symbol
+            symbol
+        }
+    }
 
-        // If query is empty, return empty list
-        if (query.isBlank()) return emptyList()
+    suspend fun searchStocks(query: String): List<StockItem> = withContext(Dispatchers.IO) {
+        try {
+            // If query is empty, return empty list
+            if (query.isBlank()) return@withContext emptyList()
 
-        // Case-insensitive search
-        val lowerCaseQuery = query.lowercase()
-
-        // Filter stocks by symbol or name
-        return demoStocks.filter { stock ->
-            stock.symbol.lowercase().contains(lowerCaseQuery) ||
-                    stock.name.lowercase().contains(lowerCaseQuery)
+            val response = apiService.searchStocks(keywords = query)
+            response.bestMatches?.map { match ->
+                StockItem(
+                    symbol = match.symbol,
+                    name = match.name,
+                    price = "N/A", // The search endpoint doesn't provide price information
+                    priceChange = 0.0,
+                    percentChange = 0.0
+                )
+            } ?: emptyList()
+        } catch (e: Exception) {
+            // In case of error, return empty list
+            emptyList()
         }
     }
 
     /**
      * Get trending stocks.
-     * In a real app, this would fetch data from an API.
+     * For this implementation, we'll use the most actively traded stocks
+     * from the top gainers & losers endpoint.
      */
-    suspend fun getTrendingStocks(): List<StockItem> {
-        // Simulate network delay
-        delay(600)
+    suspend fun getTrendingStocks(): List<StockItem> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.getTopGainersLosers()
+            response.mostActivelyTraded?.map { stock ->
+                val changeValue = stock.changeAmount.toDoubleOrNull() ?: 0.0
+                val changePercent = stock.changePercentage
+                    .replace("%", "")
+                    .toDoubleOrNull() ?: 0.0
 
-        // In a real app, this would return actual trending stocks
-        // For now, just return the first 5 demo stocks
-        return demoStocks.take(5)
+                StockItem(
+                    symbol = stock.ticker,
+                    name = getCompanyName(stock.ticker),
+                    price = "$${stock.price}",
+                    priceChange = changeValue,
+                    percentChange = changePercent
+                )
+            }?.take(5) ?: emptyList()
+        } catch (e: IOException) {
+            // In case of network error, return empty list
+            emptyList()
+        }
     }
 
     /**
-     * Get top gainers - stocks with the highest positive percentage change
-     * In a real app, this would fetch data from an API.
+     * Get top gainers
      */
-    suspend fun getTopGainers(): List<StockItem> {
-        // Simulate network delay
-        delay(700)
+    suspend fun getTopGainers(): List<StockItem> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.getTopGainersLosers()
+            response.topGainers?.map { stock ->
+                val changeValue = stock.changeAmount.toDoubleOrNull() ?: 0.0
+                val changePercent = stock.changePercentage
+                    .replace("%", "")
+                    .toDoubleOrNull() ?: 0.0
 
-        // Return pre-defined top gainers data
-        return topGainersData
+                StockItem(
+                    symbol = stock.ticker,
+                    name = getCompanyName(stock.ticker),
+                    price = "$${stock.price}",
+                    priceChange = changeValue,
+                    percentChange = changePercent
+                )
+            } ?: emptyList()
+        } catch (e: Exception) {
+            // In case of error, return empty list
+            emptyList()
+        }
     }
 
     /**
-     * Get top losers - stocks with the highest negative percentage change
-     * In a real app, this would fetch data from an API.
+     * Get top losers
      */
-    suspend fun getTopLosers(): List<StockItem> {
-        // Simulate network delay
-        delay(700)
+    suspend fun getTopLosers(): List<StockItem> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.getTopGainersLosers()
+            response.topLosers?.map { stock ->
+                val changeValue = stock.changeAmount.toDoubleOrNull() ?: 0.0
+                val changePercent = stock.changePercentage
+                    .replace("%", "")
+                    .toDoubleOrNull() ?: 0.0
 
-        // Return pre-defined top losers data
-        return topLosersData
+                StockItem(
+                    symbol = stock.ticker,
+                    name = getCompanyName(stock.ticker),
+                    price = "$${stock.price}",
+                    priceChange = changeValue,
+                    percentChange = changePercent
+                )
+            } ?: emptyList()
+        } catch (e: Exception) {
+            // In case of error, return empty list
+            emptyList()
+        }
+    }
+
+    /**
+     * Fallback method to provide demo data in case of API failures or when testing
+     */
+    fun getDemoStocks(): List<StockItem> {
+        return listOf(
+            StockItem("AAPL", "Apple Inc.", "$186.41", 1.25, 0.67),
+            StockItem("MSFT", "Microsoft Corp.", "$417.22", 2.36, 0.57),
+            StockItem("GOOGL", "Alphabet Inc.", "$178.25", -1.54, -0.86),
+            StockItem("AMZN", "Amazon.com Inc.", "$183.75", 0.95, 0.52),
+            StockItem("TSLA", "Tesla Inc.", "$174.90", -5.28, -2.93),
+            StockItem("META", "Meta Platforms Inc.", "$496.18", 3.42, 0.69),
+            StockItem("NVDA", "NVIDIA Corp.", "$875.33", 12.75, 1.48),
+            StockItem("JPM", "JPMorgan Chase & Co.", "$195.73", -0.84, -0.43),
+            StockItem("V", "Visa Inc.", "$275.54", 1.67, 0.61),
+            StockItem("WMT", "Walmart Inc.", "$62.93", 0.34, 0.54)
+        )
     }
 }

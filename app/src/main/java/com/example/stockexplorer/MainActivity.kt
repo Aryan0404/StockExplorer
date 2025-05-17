@@ -1,5 +1,4 @@
 package com.example.stockexplorer
-
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,43 +13,39 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.stockexplorer.ui.screen.HomeScreen
+import com.example.stockexplorer.ui.screen.StockDetailScreen
 import com.example.stockexplorer.ui.screen.StockListScreen
 import com.example.stockexplorer.ui.screen.StockListType
 import com.example.stockexplorer.ui.theme.StockExplorerTheme
 import com.example.stockexplorer.viewmodel.HomeViewModel
+import com.example.stockexplorer.viewmodel.StockDetailViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             StockExplorerTheme {
-                // Create a full-screen surface with the app's background color
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // Set up navigation controller
                     val navController = rememberNavController()
-
-                    // Create the view model
                     val homeViewModel: HomeViewModel = viewModel()
-
-                    // Navigation setup
+                    val stockDetailViewModel: StockDetailViewModel = viewModel()
                     NavHost(
                         navController = navController,
                         startDestination = "home"
                     ) {
-                        // Home screen route
                         composable("home") {
                             HomeScreen(
                                 state = homeViewModel.state.value,
                                 onSearch = { query -> homeViewModel.searchStock(query) },
                                 onClearSearch = { homeViewModel.clearSearch() },
                                 onStockClick = { symbol ->
-                                    // Navigate to stock detail screen and update ViewModel
                                     navController.navigate("stock_detail/$symbol")
                                     homeViewModel.navigateToStockDetail(symbol)
                                 },
+                                //these are lambda functions
                                 onViewAllGainers = {
                                     navController.navigate("stock_list/gainers")
                                 },
@@ -59,10 +54,9 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
-
-                        // Stock list screen (for top gainers and losers)
                         composable(
                             route = "stock_list/{type}",
+                            //type is the path parameter here
                             arguments = listOf(
                                 navArgument("type") { type = NavType.StringType }
                             )
@@ -73,12 +67,10 @@ class MainActivity : ComponentActivity() {
                                 "losers" -> StockListType.TOP_LOSERS
                                 else -> StockListType.TOP_GAINERS
                             }
-
                             val stocks = when (stockListType) {
                                 StockListType.TOP_GAINERS -> homeViewModel.getAllTopGainers()
                                 StockListType.TOP_LOSERS -> homeViewModel.getAllTopLosers()
                             }
-
                             StockListScreen(
                                 stockType = stockListType,
                                 stocks = stocks,
@@ -91,18 +83,18 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
-
-                        // Stock detail screen route
                         composable(
                             route = "stock_detail/{symbol}",
                             arguments = listOf(
                                 navArgument("symbol") { type = NavType.StringType }
                             )
                         ) { backStackEntry ->
-                            // Placeholder for future stock detail screen
-                            // You'll implement this later with:
-                            // val symbol = backStackEntry.arguments?.getString("symbol") ?: ""
-                            // StockDetailScreen(symbol = symbol)
+                            val symbol = backStackEntry.arguments?.getString("symbol") ?: ""
+                            StockDetailScreen(
+                                symbol = symbol,
+                                onBackPressed = { navController.popBackStack() },
+                                viewModel = stockDetailViewModel
+                            )
                         }
                     }
                 }

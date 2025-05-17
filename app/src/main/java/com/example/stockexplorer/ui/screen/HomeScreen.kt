@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import android.util.Log
 
 data class HomeState(
     val searchQuery: String = "",
@@ -81,7 +82,6 @@ fun HomeScreen(
 
         // Content based on search state
         if (state.searchQuery.isEmpty()) {
-            // Show when not searching - using a single LazyColumn
             LazyColumn {
                 // Recent Searches Section
                 item {
@@ -169,8 +169,8 @@ fun HomeScreen(
                             modifier = Modifier.clickable { onViewAllGainers() }
                         )
                     }
-
                     val displayGainers = if (state.topGainers.isEmpty()) {
+                        Log.d("StockViewModel", "state.topGainers contains data: ${state.topGainers}")
                         remember {
                             listOf(
                                 StockItem("NVDA", "NVIDIA Corp.", "$123.45", 8.25, 7.15),
@@ -189,7 +189,7 @@ fun HomeScreen(
                     ) {
                         items(displayGainers, key = { it.symbol }) { stock ->
                             StockCard(stock = stock, onClick = { onStockClick(stock.symbol) })
-                        }
+                      }
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
@@ -248,8 +248,6 @@ fun HomeScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
                 }
-
-                // Trending Stocks Section Header
                 item {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -272,7 +270,7 @@ fun HomeScreen(
 
                 // Trending Stocks items
                 item {
-                    val displayStocks = if (state.trendingStocks.isEmpty()) {
+                    val displayStocks = state.trendingStocks.ifEmpty {
                         remember {
                             listOf(
                                 StockItem("AAPL", "Apple Inc.", "$186.41", 1.25, 0.67),
@@ -282,8 +280,6 @@ fun HomeScreen(
                                 StockItem("TSLA", "Tesla Inc.", "$174.90", -5.28, -2.93)
                             )
                         }
-                    } else {
-                        state.trendingStocks
                     }
 
                     Column {
@@ -439,8 +435,6 @@ fun StockCard(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Medium
             )
-
-            // Price change
             val changeColor = if (stock.priceChange >= 0) Color(0xFF4CAF50) else Color(0xFFE53935)
             val changePrefix = if (stock.priceChange >= 0) "+" else ""
 
@@ -452,7 +446,6 @@ fun StockCard(
         }
     }
 }
-
 @Composable
 fun StockListItem(
     stock: StockItem,

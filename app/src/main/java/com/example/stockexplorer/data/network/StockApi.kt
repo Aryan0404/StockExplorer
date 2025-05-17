@@ -1,30 +1,80 @@
-// data/network/StockApiService.kt
 package com.example.stockexplorer.data.network
 
+import com.example.stockexplorer.data.model.CompanyOverviewResponse
+import com.example.stockexplorer.data.model.GlobalQuoteResponse
+import com.example.stockexplorer.data.model.SearchResponse
+import com.example.stockexplorer.data.model.StockHistoricalData
+import com.example.stockexplorer.data.model.TopGainersLosersResponse
 import okhttp3.OkHttpClient
-
 import okhttp3.logging.HttpLoggingInterceptor
-
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 
+/**
+ * API service interface for Alpha Vantage stock API
+ */
 interface StockApiService {
-    @GET("query?function=GLOBAL_QUOTE")
+    /**
+     * Get real-time stock quote information
+     */
+    @GET("query")
     suspend fun getGlobalQuote(
+        @Query("function") function: String = "GLOBAL_QUOTE",
         @Query("symbol") symbol: String,
         @Query("apikey") apiKey: String = StockApi.API_KEY
-    ):  Map<String, Any>
+    ): GlobalQuoteResponse
 
-    // You can add endpoints here for top gainers / losers if your API provides them or
-    // use dummy data for now and later integrate proper endpoints.
+    /**
+     * Search for stocks by keywords
+     */
+    @GET("query")
+    suspend fun searchStocks(
+        @Query("function") function: String = "SYMBOL_SEARCH",
+        @Query("keywords") keywords: String,
+        @Query("apikey") apiKey: String = StockApi.API_KEY
+    ): SearchResponse
+
+    /**
+     * Get company overview information
+     */
+    @GET("query")
+    suspend fun getCompanyOverview(
+        @Query("function") function: String = "OVERVIEW",
+        @Query("symbol") symbol: String,
+        @Query("apikey") apiKey: String = StockApi.API_KEY
+    ): CompanyOverviewResponse
+
+    /**
+     * Get top gainers and losers
+     */
+    @GET("query")
+    suspend fun getTopGainersLosers(
+        @Query("function") function: String = "TOP_GAINERS_LOSERS",
+        @Query("apikey") apiKey: String = StockApi.API_KEY
+    ): TopGainersLosersResponse
+
+    /**
+     * Get historical time series stock data (daily)
+     */
+    @GET("query")
+    suspend fun getHistoricalData(
+        @Query("function") function: String = "TIME_SERIES_DAILY",
+        @Query("symbol") symbol: String,
+        @Query("outputsize") outputSize: String = "compact",
+        @Query("apikey") apiKey: String = StockApi.API_KEY
+    ): List<StockHistoricalData>
 }
 
+/**
+ * Singleton object to provide the Retrofit API instance
+ */
 object StockApi {
     private const val BASE_URL = "https://www.alphavantage.co/"
 
-    const val API_KEY = "YOUR_API_KEY_HERE"
+    // Use the provided API key
+    const val API_KEY = "VLIRMDFWU5MADQHW"
 
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
