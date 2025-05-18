@@ -13,9 +13,6 @@ sealed class NetworkResult<out T> {
     }
 }
 
-/**
- * Extension function to handle network results more elegantly
- */
 inline fun <T, R> NetworkResult<T>.fold(
     onSuccess: (T) -> R,
     onError: (String) -> R,

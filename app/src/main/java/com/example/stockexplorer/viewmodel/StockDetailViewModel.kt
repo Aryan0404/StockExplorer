@@ -12,34 +12,25 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
-/**
- * UI state for the stock detail screen
- */
 data class StockDetailState(
     val stock: StockItem? = null,
     val isLoading: Boolean = false,
     val errorMessage: String? = null
 )
 
-/**
- * ViewModel for the StockDetailScreen
- */
+
 class StockDetailViewModel : ViewModel() {
     private val repository = StockRepository()
 
-    // Stock detail state
     private val _stockState = MutableStateFlow(StockDetailState(isLoading = true))
     val stockState: StateFlow<StockDetailState> = _stockState.asStateFlow()
 
-    // Chart data
     private val _chartData = MutableStateFlow<List<StockHistoricalData>>(emptyList())
     val chartData: StateFlow<List<StockHistoricalData>> = _chartData.asStateFlow()
 
-    // Selected time range
     private val _timeRange = MutableStateFlow("1M")
     val timeRange: StateFlow<String> = _timeRange.asStateFlow()
 
-    // Mock stock data to avoid API calls
     private val mockStocks = mapOf(
         "AAPL" to StockItem(
             symbol = "AAPL",
@@ -133,9 +124,6 @@ class StockDetailViewModel : ViewModel() {
         )
     )
 
-    /**
-     * Load stock details and historical data using mock data
-     */
     fun loadStockDetails(symbol: String) {
         viewModelScope.launch {
             _stockState.value = StockDetailState(isLoading = true)
@@ -162,17 +150,10 @@ class StockDetailViewModel : ViewModel() {
         }
     }
 
-    /**
-     * Get mock stock data instead of making API calls
-     */
     private fun getMockStock(symbol: String): StockItem? {
-        // Return the mock stock if it exists, otherwise create a default one
         return mockStocks[symbol] ?: generateDefaultStock(symbol)
     }
 
-    /**
-     * Generate a default stock if the requested symbol isn't in our mock data
-     */
     private fun generateDefaultStock(symbol: String): StockItem {
         val random = Random()
         val price = 100 + random.nextDouble() * 200
@@ -190,13 +171,10 @@ class StockDetailViewModel : ViewModel() {
         )
     }
 
-    /**
-     * Load historical chart data for the given symbol and time range
-     */
+
     private fun loadChartData(symbol: String) {
         viewModelScope.launch {
             try {
-                // Generate mock data based on time range
                 _chartData.value = generateMockChartData(timeRange.value)
             } catch (e: Exception) {
                 // If chart data loading fails, we still show the stock info
@@ -206,14 +184,10 @@ class StockDetailViewModel : ViewModel() {
         }
     }
 
-    /**
-     * Set the selected time range and reload chart data
-     */
+
     fun setTimeRange(range: String) {
         if (_timeRange.value != range) {
             _timeRange.value = range
-
-            // Reload chart data for the new time range
             _stockState.value.stock?.let { stock ->
                 loadChartData(stock.symbol)
             }
@@ -232,10 +206,8 @@ class StockDetailViewModel : ViewModel() {
             "5Y" -> 60
             else -> 30
         }
-        val calendar = Calendar.getInstance()
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
 
-        // Step size for the date (in days)
         val stepSize = when (range) {
             "1D" -> 0 // For 1D, we'll use hours instead
             "1W" -> 1
@@ -253,13 +225,11 @@ class StockDetailViewModel : ViewModel() {
                 // For 1D, go back by hours
                 adjustedCalendar.add(Calendar.HOUR_OF_DAY, -(dataPoints - index - 1))
             } else {
-                // Go back by days based on the step size
                 adjustedCalendar.add(Calendar.DAY_OF_YEAR, -((dataPoints - index - 1) * stepSize))
             }
 
             val dateStr = dateFormat.format(adjustedCalendar.time)
 
-            // Generate price with some randomness, but trending towards the current price
             val randomFactor = 0.02 // 2% random variation
             val trendFactor = (index.toDouble() / dataPoints) // Trend towards current price
             val startPrice = currentPrice * 0.8 // Start 20% lower than current price

@@ -53,13 +53,11 @@ class HomeViewModel(
                 topLosers.clear()
                 topLosers.addAll(losers)
 
-                // Update state with the first few items of each category
                 state.value = state.value.copy(
                     topGainers = gainers.take(5),  // Show only 5 in the home screen
                     topLosers = losers.take(5)     // Show only 5 in the home screen
                 )
             } catch (e: Exception) {
-                // Handle error - could set an error state here if needed
             }
         }
     }
@@ -122,12 +120,7 @@ class HomeViewModel(
     }
 
     fun navigateToStockDetail(symbol: String) {
-        // This method is called when a stock is clicked
-        // It can be used to prepare data before navigation
-        // or to track analytics, etc.
-
-        // For now, we'll just add the symbol to recent searches if not already there
-        if (!recentSearches.contains(symbol)) {
+          if (!recentSearches.contains(symbol)) {
             recentSearches.add(0, symbol)
             if (recentSearches.size > 5) {
                 recentSearches.removeAt(recentSearches.size - 1)
@@ -136,7 +129,6 @@ class HomeViewModel(
         }
     }
 
-    // Return all top gainers for the StockListScreen
     fun getAllTopGainers(): List<StockItem> {
         return topGainers.toList()
     }
