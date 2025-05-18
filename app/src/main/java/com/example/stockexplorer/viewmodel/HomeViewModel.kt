@@ -146,9 +146,5 @@ class HomeViewModel(
         return topLosers.toList()
     }
 
-    // Refresh data - useful for pull-to-refresh functionality
-    fun refreshData() {
-        loadTrendingStocks()
-        loadTopGainersAndLosers()
-    }
+
 }

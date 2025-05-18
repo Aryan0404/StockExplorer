@@ -41,9 +41,6 @@ fun StockChart(chartData: List<StockHistoricalData>, modifier: Modifier = Modifi
     )
 }
 
-/**
- * Creates and configures a LineChart
- */
 private fun createLineChart(context: Context): LineChart {
     return LineChart(context).apply {
         description.isEnabled = false

@@ -2,6 +2,7 @@ package com.example.stockexplorer.ui.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -39,9 +40,11 @@ fun StockInfoCard(stock: com.example.stockexplorer.data.model.StockItem) {
             InfoRow("Current Price", stock.price)
             InfoRow("Change", "${stock.priceChange} (${stock.percentChange}%)")
 
-            // Additional company information would go here
-            // This would be filled with data from the company overview API
-            Divider(modifier = Modifier.padding(vertical = 16.dp))
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 16.dp),
+                thickness = DividerDefaults.Thickness,
+                color = DividerDefaults.color
+            )
 
             Text(
                 text = "Key Metrics",

@@ -28,12 +28,10 @@ fun StockDetailScreen(
     onBackPressed: () -> Unit,
     viewModel: StockDetailViewModel
 ) {
-    // Collect UI state from ViewModel
     val stockState by viewModel.stockState.collectAsState()
     val chartData by viewModel.chartData.collectAsState()
     val timeRange by viewModel.timeRange.collectAsState()
 
-    // Request stock details when the screen loads
     LaunchedEffect(symbol) {
         viewModel.loadStockDetails(symbol)
     }
@@ -64,7 +62,6 @@ fun StockDetailScreen(
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
         ) {
-            // Show loading indicator when data is being fetched
             if (stockState.isLoading) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -74,7 +71,6 @@ fun StockDetailScreen(
                 }
             }
 
-            // Show error message if there's an error
             stockState.errorMessage?.let { errorMessage ->
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -87,12 +83,9 @@ fun StockDetailScreen(
                 }
             }
 
-            // Show stock details when data is available
             stockState.stock?.let { stock ->
-                // Stock header with current price and change
                 StockHeader(stock)
 
-                // Stock price chart
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -111,20 +104,17 @@ fun StockDetailScreen(
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
 
-                        // Time range selector
                         TimeRangeSelector(
                             selectedRange = timeRange,
                             onRangeSelected = { viewModel.setTimeRange(it) }
                         )
 
-                        // Stock chart component
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(1f)
                         ) {
                             if (chartData.isEmpty()) {
-                                // Show loading indicator if chart data is being fetched
                                 Box(
                                     modifier = Modifier.fillMaxSize(),
                                     contentAlignment = Alignment.Center
@@ -134,7 +124,6 @@ fun StockDetailScreen(
                                     )
                                 }
                             } else {
-                                // Display the chart with the data
                                 StockChart(
                                     chartData = chartData,
                                     modifier = Modifier.fillMaxSize()
@@ -144,16 +133,12 @@ fun StockDetailScreen(
                     }
                 }
 
-                // Company information
                 StockInfoCard(stock)
             }
         }
     }
 }
 
-/**
- * Header section showing the stock name, price, and price change
- */
 @Composable
 private fun StockHeader(stock: StockItem) {
     val priceColor = if (stock.priceChange >= 0) Color(0xFF4CAF50) else Color(0xFFE53935)
@@ -207,9 +192,6 @@ private fun StockHeader(stock: StockItem) {
     }
 }
 
-/**
- * Time range selector for the chart
- */
 @Composable
 private fun TimeRangeSelector(
     selectedRange: String,

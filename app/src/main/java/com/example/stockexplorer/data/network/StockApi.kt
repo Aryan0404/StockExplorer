@@ -12,23 +12,14 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-/**
- * API service interface for Alpha Vantage stock API
- */
 interface StockApiService {
-    /**
-     * Get real-time stock quote information
-     */
+
     @GET("query")
     suspend fun getGlobalQuote(
         @Query("function") function: String = "GLOBAL_QUOTE",
         @Query("symbol") symbol: String,
         @Query("apikey") apiKey: String = StockApi.API_KEY
     ): GlobalQuoteResponse
-
-    /**
-     * Search for stocks by keywords
-     */
     @GET("query")
     suspend fun searchStocks(
         @Query("function") function: String = "SYMBOL_SEARCH",
@@ -67,15 +58,9 @@ interface StockApiService {
     ): List<StockHistoricalData>
 }
 
-/**
- * Singleton object to provide the Retrofit API instance
- */
 object StockApi {
     private const val BASE_URL = "https://www.alphavantage.co/"
-
-    // Use the provided API key
-    const val API_KEY = "VLIRMDFWU5MADQHW"
-
+    const val API_KEY = "IP18IJELKW20EBB7"
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
     }
