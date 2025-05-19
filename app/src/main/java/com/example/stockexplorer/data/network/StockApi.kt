@@ -54,7 +54,6 @@ interface StockApiService {
 object StockApi {
     private const val BASE_URL = "https://www.alphavantage.co/"
 
-    // 🔐 Securely get the API key from build.gradle.kts via BuildConfig
     val API_KEY: String
         get() = BuildConfig.ALPHA_VANTAGE_API_KEY
 
