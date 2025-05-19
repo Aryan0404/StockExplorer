@@ -103,7 +103,6 @@ private fun updateChartWithData(chart: LineChart, data: List<StockHistoricalData
         setDrawFilled(true)
     }
 
-    // Format X axis labels with dates
     chart.xAxis.valueFormatter = IndexAxisValueFormatter(
         data.map { it.date.substringAfterLast('-') } // Show only day from the date
     )
