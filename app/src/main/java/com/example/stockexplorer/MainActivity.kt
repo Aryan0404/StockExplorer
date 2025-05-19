@@ -56,7 +56,6 @@ class MainActivity : ComponentActivity() {
                         }
                         composable(
                             route = "stock_list/{type}",
-                            //type is the path parameter here
                             arguments = listOf(
                                 navArgument("type") { type = NavType.StringType }
                             )

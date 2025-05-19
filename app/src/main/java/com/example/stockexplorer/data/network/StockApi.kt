@@ -60,7 +60,7 @@ interface StockApiService {
 
 object StockApi {
     private const val BASE_URL = "https://www.alphavantage.co/"
-    const val API_KEY = "IP18IJELKW20EBB7"
+    const val API_KEY = "Z8R9IT39SR42KD1K"
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
     }
