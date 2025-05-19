@@ -10,9 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 
-/**
- * Simple theme toggle button that switches between light and dark mode
- */
 @Composable
 fun ThemeToggleButton(
     isDarkTheme: Boolean,
