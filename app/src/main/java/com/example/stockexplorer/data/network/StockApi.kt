@@ -11,6 +11,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
+import com.example.stockexplorer.BuildConfig
 
 interface StockApiService {
 
@@ -20,6 +21,7 @@ interface StockApiService {
         @Query("symbol") symbol: String,
         @Query("apikey") apiKey: String = StockApi.API_KEY
     ): GlobalQuoteResponse
+
     @GET("query")
     suspend fun searchStocks(
         @Query("function") function: String = "SYMBOL_SEARCH",
@@ -27,9 +29,6 @@ interface StockApiService {
         @Query("apikey") apiKey: String = StockApi.API_KEY
     ): SearchResponse
 
-    /**
-     * Get company overview information
-     */
     @GET("query")
     suspend fun getCompanyOverview(
         @Query("function") function: String = "OVERVIEW",
@@ -37,18 +36,12 @@ interface StockApiService {
         @Query("apikey") apiKey: String = StockApi.API_KEY
     ): CompanyOverviewResponse
 
-    /**
-     * Get top gainers and losers
-     */
     @GET("query")
     suspend fun getTopGainersLosers(
         @Query("function") function: String = "TOP_GAINERS_LOSERS",
         @Query("apikey") apiKey: String = StockApi.API_KEY
     ): TopGainersLosersResponse
 
-    /**
-     * Get historical time series stock data (daily)
-     */
     @GET("query")
     suspend fun getHistoricalData(
         @Query("function") function: String = "TIME_SERIES_DAILY",
@@ -60,7 +53,11 @@ interface StockApiService {
 
 object StockApi {
     private const val BASE_URL = "https://www.alphavantage.co/"
-    const val API_KEY = "Z8R9IT39SR42KD1K"
+
+    // 🔐 Securely get the API key from build.gradle.kts via BuildConfig
+    val API_KEY: String
+        get() = BuildConfig.ALPHA_VANTAGE_API_KEY
+
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
     }

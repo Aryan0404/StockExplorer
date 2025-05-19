@@ -13,11 +13,18 @@
             targetSdk = 35
             versionCode = 1
             versionName = "1.0"
+            buildConfigField(
+                "String",
+                "ALPHA_VANTAGE_API_KEY",
+                "\"${project.properties["ALPHA_VANTAGE_API_KEY"]}\""
+            )
 
             testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
             vectorDrawables {
                 useSupportLibrary = true
             }
+
+
         }
 
         buildTypes {
@@ -38,6 +45,7 @@
         }
         buildFeatures {
             compose = true
+            buildConfig = true // ✅ This enables BuildConfig generation
         }
         composeOptions {
             kotlinCompilerExtensionVersion = "1.5.1"
