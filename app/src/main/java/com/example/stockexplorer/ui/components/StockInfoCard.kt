@@ -39,18 +39,6 @@ fun StockInfoCard(stock: com.example.stockexplorer.data.model.StockItem) {
                 color = DividerDefaults.color
             )
 
-            Text(
-                text = "Key Metrics",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-
-            InfoRow("Market Cap", "N/A")
-            InfoRow("P/E Ratio", "N/A")
-            InfoRow("52-Week High", "N/A")
-            InfoRow("52-Week Low", "N/A")
-            InfoRow("Volume", "N/A")
         }
     }
 }
