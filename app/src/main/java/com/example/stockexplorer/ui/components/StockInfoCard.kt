@@ -8,11 +8,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
-/**
- * Card displaying detailed information about a stock
- *
- * @param stock Stock to display information for
- */
 @Composable
 fun StockInfoCard(stock: com.example.stockexplorer.data.model.StockItem) {
     Card(
@@ -33,8 +28,6 @@ fun StockInfoCard(stock: com.example.stockexplorer.data.model.StockItem) {
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            // This would ideally be populated with actual company info
-            // from an API response, but for now we'll display placeholder data
             InfoRow("Symbol", stock.symbol)
             InfoRow("Name", stock.name)
             InfoRow("Current Price", stock.price)
@@ -53,7 +46,6 @@ fun StockInfoCard(stock: com.example.stockexplorer.data.model.StockItem) {
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            // Placeholder metrics - these would be populated from the API
             InfoRow("Market Cap", "N/A")
             InfoRow("P/E Ratio", "N/A")
             InfoRow("52-Week High", "N/A")
@@ -63,9 +55,6 @@ fun StockInfoCard(stock: com.example.stockexplorer.data.model.StockItem) {
     }
 }
 
-/**
- * Row displaying a label and value
- */
 @Composable
 private fun InfoRow(label: String, value: String) {
     Row(
